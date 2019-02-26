@@ -9,17 +9,59 @@
 import UIKit
 
 class ViewController: UIViewController {
-
+    var operationQueue: OperationQueue!
+    
+//    @IBAction func start(_ sender: Any) {
+//        let aConcurrentQueue =  DispatchQueue.global(qos: .background)
+//        aConcurrentQueue.async {
+//            self.T1()
+//        }
+//
+//        aConcurrentQueue.async {
+//            self.T2()
+//        }
+//    }
+    
     @IBAction func start(_ sender: Any) {
-        let aConcurrentQueue =  DispatchQueue.global(qos: .background)
-        aConcurrentQueue.async {
+
+        operationQueue = OperationQueue()
+
+        let aBlockOperation = BlockOperation {
             self.T1()
         }
-        
-        aConcurrentQueue.async {
+
+        let bBlockOperation = BlockOperation {
             self.T2()
         }
+        
+        
+        let cBlockOperation = BlockOperation {
+            self.T3()
+        }
+        
+        cBlockOperation.addDependency(aBlockOperation)
+        
+        print(aBlockOperation.queuePriority.rawValue)
+        print(bBlockOperation.queuePriority.rawValue)
+//       aBlockOperation.queuePriority = .veryLow
+        operationQueue.addOperations([aBlockOperation, bBlockOperation, cBlockOperation], waitUntilFinished: true)
+        operationQueue.maxConcurrentOperationCount = 2
+
+//        let aConcurrentQueue =  DispatchQueue.global(qos: .background)
+//        aConcurrentQueue.async {
+//            self.T1()
+//        }
+//
+//        aConcurrentQueue.async {
+//            self.T2()
+//        }
     }
+    
+    
+//    @IBAction func start(_ sender: Any) {
+//        let operationQueue = OperationQueue()
+//    }
+    
     
     @IBOutlet weak var displayer: UILabel!
     override func viewDidLoad() {
@@ -29,8 +71,12 @@ class ViewController: UIViewController {
     
     func T1() {
         for i in 1...100000 {
+            
+            if i == 1000 {
+                operationQueue.cancelAllOperations()
+            }
             print("+++++++++++ \(i)")
-            DispatchQueue.main.async {
+            OperationQueue.main.addOperation {
                 self.displayer.text = "\(i)"
             }
         }
@@ -43,5 +89,10 @@ class ViewController: UIViewController {
         }
     }
 
+    func T3() {
+        for i in stride(from: 100, to: 0, by: -1) {
+            print("************** \(i) \n \n \n")
+        }
+    }
 }
 
